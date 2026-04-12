@@ -4,8 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "clean": "rm -rf ./dist",
+    "clean-build": "pnpm clean && pnpm build",
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "dev-be": "node --watch server/index.ts",
+    "build": "tsc && vite build && tsc -p tsconfig.node.json",
     "lint": "eslint .",
     "preview": "vite preview"
   },
