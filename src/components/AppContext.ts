@@ -1,8 +1,8 @@
 import { createContext, useContext } from "react";
-import type { TableState } from "../state";
+import type { TableStateWithHistory } from "../state/reducer";
 
 export interface IAppContext {
-  state: TableState;
+  state: TableStateWithHistory;
 
   focused?: {
     offset: number;

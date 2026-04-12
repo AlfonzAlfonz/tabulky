@@ -3,7 +3,10 @@ import { Editor } from "./Editor";
 import { Topbar } from "./Topbar";
 
 export const Table = () => {
-  const { state, setFocused } = useApp();
+  const {
+    state: { table: state },
+    setFocused,
+  } = useApp();
 
   const gridTemplateColumns = [...Array(state.width)].map(() => 80);
   const gridTemplateRows = [...Array(state.height)].map(() => 24);
