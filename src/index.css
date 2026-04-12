@@ -1,0 +1,10 @@
+@import "tailwindcss";
+@import "@heroui/styles"; 
+
+.jed-table {
+
+  .jed-cell {
+    @apply border border-black;
+    border-width: 0.5px;
+  }
+}
