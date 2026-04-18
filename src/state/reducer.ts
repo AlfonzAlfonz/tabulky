@@ -11,7 +11,7 @@ export const tableStateReducer = (
 ): TableState => {
   switch (action.type) {
     case "reset": {
-      return action.state;
+      return action.table;
     }
     case "edit": {
       if (!state) return undefined!;
@@ -32,7 +32,7 @@ export const clientTableStateReducer = (
   if (!state) {
     if (action.type === "reset") {
       return {
-        table: action.state,
+        table: action.table,
         revertStack: [],
       };
     }
@@ -58,7 +58,7 @@ export const clientTableStateReducer = (
 export const serverTableStateReducer = (
   state: ServerTableState,
   action: TableStateAction,
-) => {
+): ServerTableState => {
   return {
     table: tableStateReducer(state.table, action),
     offset: state.offset + 1,

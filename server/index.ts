@@ -1,31 +1,22 @@
 import express from "express";
 import http from "http";
-import { Server, Socket } from "socket.io";
+import { Server } from "socket.io";
 import {
-  createInitState,
   type ClientAction,
-  type TableState,
   type TableStateAction,
 } from "../src/state/index.ts";
-import { tableStateReducer } from "../src/state/reducer.ts";
+import { createRoom, type Room } from "./createRoom.ts";
+import { createDb } from "./db.ts";
 
-interface RoomState {
-  state: TableState;
-  clients: Set<Socket>;
-  offset: number;
-}
+const controller = new AbortController();
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-const rooms = new Map<string, RoomState>();
+const db = createDb();
 
-const init = (): RoomState => ({
-  state: createInitState(),
-  clients: new Set(),
-  offset: 0,
-});
+const rooms = new Map<string, Room>();
 
 io.on("connection", (socket) => {
   if (!socket.request.url) {
@@ -43,51 +34,43 @@ io.on("connection", (socket) => {
 
   console.log(`User "${socket.id}" connected to "${id}"`);
 
-  if (!rooms.has(id)) {
-    rooms.set(id, init());
-  } else {
-    rooms.get(id)!.clients.add(socket);
-  }
-
-  const room = rooms.get(id)!;
-  socket.emit("table-action", {
-    type: "reset",
-    state: room.state,
-    offset: room.offset,
-  } satisfies TableStateAction);
+  if (!rooms.has(id)) rooms.set(id, createRoom(controller.signal, db));
+  rooms.get(id)?.subscribe(socket);
 
   socket.on("disconnect", () => {
     console.log(`user ${socket.id} disconnected`);
+    for (const room of rooms.values()) {
+      room.unsubscribe(socket);
+    }
   });
 
   socket.on("table-action", (action: TableStateAction) => {
     const room = rooms.get(id);
     if (!room) return;
 
-    const state = tableStateReducer(room.state, action);
-
-    rooms.set(id, { ...room, state });
-    for (const client of room.clients) {
-      if (client === socket) continue;
-      client.emit("table-action", action);
-    }
+    room.receive(socket, action);
   });
 
   socket.on("meta-action", (action: ClientAction) => {
-    if (action.type === "reset") {
-      const room = rooms.get(id)!;
-      socket.emit("table-action", {
-        type: "reset",
-        state: room.state,
-        offset: room.offset,
-      } satisfies TableStateAction);
-      return;
-    }
+    const room = rooms.get(id);
+    if (!room) return;
 
-    // action satisfies never;
+    room.receiveClientAction(socket, action);
   });
 });
 
 server.listen(4000, () => {
   console.log("Listening on http://localhost:4000");
+});
+
+process.on("SIGINT", () => {
+  console.log("Exiting...");
+  controller.abort();
+  io.close();
+  server.close();
+
+  for (const room of rooms.values()) {
+    room.persist();
+  }
+  process.exit(0);
 });

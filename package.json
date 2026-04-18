@@ -14,11 +14,13 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@alfonz/async": "^0.1.0",
     "@gravity-ui/icons": "^2.18.0",
     "@heroui/react": "^3.0.2",
     "@heroui/styles": "^3.0.2",
     "@tailwindcss/vite": "^4.2.2",
     "express": "^5.2.1",
+    "nanoid": "^5.1.9",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "socket.io": "^4.8.3",

@@ -1,4 +1,6 @@
 export interface TableState {
+  id: string;
+
   width: number;
   height: number;
 
@@ -12,13 +14,13 @@ export type ClientTableState = {
 
 export type ServerTableState = {
   table: TableState;
-  offset: 0;
+  offset: number;
 };
 
 export type TableStateAction = {
   offset: number;
 } & (
-  | { type: "reset"; state: TableState }
+  | { type: "reset"; table: TableState }
   | {
       type: "edit";
       offset: number;
@@ -31,6 +33,7 @@ export type ServerAction = never;
 export type ClientAction = { type: "reset" };
 
 export const createInitState = (width = 40, height = 100): TableState => ({
+  id: "test",
   width,
   height,
 
@@ -45,3 +48,5 @@ export const createInitState = (width = 40, height = 100): TableState => ({
     return "";
   }),
 });
+
+export const action = <const T extends TableStateAction>(action: T) => action;
