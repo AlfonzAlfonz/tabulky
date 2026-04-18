@@ -10,8 +10,13 @@ import type { Db } from "./db.ts";
 
 export type Room = ReturnType<typeof createRoom>;
 
-export const createRoom = (signal: AbortSignal, db: Db) => {
-  let state = db.get("test");
+export const createRoom = (signal: AbortSignal, db: Db, id: string) => {
+  let state = db.get(id)!;
+
+  if (!state) {
+    throw new Error("Not found");
+  }
+
   const clients = new Set<Socket>();
   let persisted = false;
 
@@ -39,6 +44,7 @@ export const createRoom = (signal: AbortSignal, db: Db) => {
     },
     unsubscribe: (socket: Socket) => {
       clients.delete(socket);
+      return { empty: clients.size === 0 };
     },
     receive: (socket: Socket, a: TableStateAction) => {
       state = serverTableStateReducer(state, a);

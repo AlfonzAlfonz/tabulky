@@ -10,53 +10,65 @@ import { createDb } from "./db.ts";
 
 const controller = new AbortController();
 
+const db = createDb(controller.signal);
 const app = express();
+
+app.post("/api/create", (_, res) => {
+  const id = db.create();
+
+  res.end(id);
+});
+
 const server = http.createServer(app);
 const io = new Server(server);
-
-const db = createDb();
 
 const rooms = new Map<string, Room>();
 
 io.on("connection", (socket) => {
-  if (!socket.request.url) {
-    socket.disconnect();
-    return;
-  }
-
-  const url = new URL(socket.request.url, "http://localhost");
-  const id = [url.searchParams.get("id")].flat()[0];
-
-  if (!id) {
-    socket.disconnect();
-    return;
-  }
-
-  console.log(`User "${socket.id}" connected to "${id}"`);
-
-  if (!rooms.has(id)) rooms.set(id, createRoom(controller.signal, db));
-  rooms.get(id)?.subscribe(socket);
-
-  socket.on("disconnect", () => {
-    console.log(`user ${socket.id} disconnected`);
-    for (const room of rooms.values()) {
-      room.unsubscribe(socket);
+  try {
+    if (!socket.request.url) {
+      socket.disconnect();
+      return;
     }
-  });
 
-  socket.on("table-action", (action: TableStateAction) => {
-    const room = rooms.get(id);
-    if (!room) return;
+    const url = new URL(socket.request.url, "http://localhost");
+    const id = [url.searchParams.get("id")].flat()[0];
 
-    room.receive(socket, action);
-  });
+    if (!id) {
+      socket.disconnect();
+      return;
+    }
 
-  socket.on("meta-action", (action: ClientAction) => {
-    const room = rooms.get(id);
-    if (!room) return;
+    console.log(`User "${socket.id}" connected to "${id}"`);
 
-    room.receiveClientAction(socket, action);
-  });
+    if (!rooms.has(id)) rooms.set(id, createRoom(controller.signal, db, id));
+    rooms.get(id)?.subscribe(socket);
+
+    socket.on("disconnect", () => {
+      console.log(`user ${socket.id} disconnected`);
+      for (const [id, room] of rooms.entries()) {
+        if (room.unsubscribe(socket).empty) {
+          rooms.delete(id);
+        }
+      }
+    });
+
+    socket.on("table-action", (action: TableStateAction) => {
+      const room = rooms.get(id);
+      if (!room) return;
+
+      room.receive(socket, action);
+    });
+
+    socket.on("meta-action", (action: ClientAction) => {
+      const room = rooms.get(id);
+      if (!room) return;
+
+      room.receiveClientAction(socket, action);
+    });
+  } catch {
+    socket.disconnect();
+  }
 });
 
 server.listen(4000, () => {

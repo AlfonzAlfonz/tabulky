@@ -32,8 +32,12 @@ export type TableStateAction = {
 export type ServerAction = never;
 export type ClientAction = { type: "reset" };
 
-export const createInitState = (width = 40, height = 100): TableState => ({
-  id: "test",
+export const createInitState = (
+  id: string,
+  width = 40,
+  height = 100,
+): TableState => ({
+  id,
   width,
   height,
 

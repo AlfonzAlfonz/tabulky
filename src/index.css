@@ -1,8 +1,11 @@
 @import "tailwindcss";
-@import "@heroui/styles"; 
+@import "@heroui/styles";
+
+:root {
+  --accent: oklch(43.2% 0.095 166.913); /* emerald-800 */
+}
 
 .jed-table {
-
   .jed-cell {
     @apply border border-black;
     border-width: 0.5px;

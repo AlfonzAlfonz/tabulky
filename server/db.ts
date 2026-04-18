@@ -1,4 +1,5 @@
-import { DatabaseSync } from "node:sqlite";
+import { nanoid } from "nanoid";
+import { DatabaseSync, type SQLOutputValue } from "node:sqlite";
 import {
   createInitState,
   type ServerTableState,
@@ -7,8 +8,10 @@ import {
 
 export type Db = ReturnType<typeof createDb>;
 
-export const createDb = () => {
+export const createDb = (signal: AbortSignal) => {
   const db = new DatabaseSync("./data.sqlite");
+
+  signal.addEventListener("abort", () => db.close());
 
   db.exec(/* sql */ `
     CREATE TABLE IF NOT EXISTS tables (
@@ -19,33 +22,37 @@ export const createDb = () => {
     );
   `);
 
+  const tableModel = (table: Record<string, SQLOutputValue>) => {
+    return {
+      table: {
+        id: String(table.id),
+        width: Number(table.width),
+        height: Number(table.height),
+        data: JSON.parse(String(table.tableData ?? "[]")),
+      },
+      offset: 0,
+    };
+  };
+
   return {
-    get: (id: string): ServerTableState => {
-      let table = db.prepare("SELECT * FROM tables WHERE id = ?").get(id);
+    create: () => {
+      const state = createInitState(nanoid());
+      const { id } = db
+        .prepare(
+          "INSERT INTO tables (id, width, height, tableData) VALUES(?, ?, ?, ?) RETURNING id",
+        )
+        .get(state.id, state.width, state.height, JSON.stringify(state.data))!;
+
+      return String(id);
+    },
+    get: (id: string): ServerTableState | undefined => {
+      const table = db.prepare("SELECT * FROM tables WHERE id = ?").get(id);
 
       if (!table) {
-        const state = createInitState();
-        table = db
-          .prepare(
-            "INSERT INTO tables (id, width, height, tableData) VALUES(?, ?, ?, ?) RETURNING id, width, height, tableData",
-          )
-          .get(
-            state.id,
-            state.width,
-            state.height,
-            JSON.stringify(state.data),
-          )!;
+        return undefined;
       }
 
-      return {
-        table: {
-          id: String(table.id),
-          width: Number(table.width),
-          height: Number(table.height),
-          data: JSON.parse(String(table.tableData ?? "[]")),
-        },
-        offset: 0,
-      };
+      return tableModel(table);
     },
     update: (state: TableState) => {
       db.prepare(

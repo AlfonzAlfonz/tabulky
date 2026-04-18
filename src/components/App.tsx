@@ -5,7 +5,11 @@ import { clientTableStateReducer } from "../state/reducer";
 import { AppContext } from "./AppContext";
 import { Table } from "./Table";
 
-export const App = () => {
+interface Props {
+  id: string;
+}
+
+export const App = ({ id }: Props) => {
   const [state, dispatchLocalAction] = useReducer(
     clientTableStateReducer,
     undefined,
@@ -17,7 +21,7 @@ export const App = () => {
 
   useEffect(() => {
     const socket = io("http://localhost:4000", {
-      query: { id: "test" },
+      query: { id },
     });
 
     let offset = 0;
@@ -41,7 +45,7 @@ export const App = () => {
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [id]);
 
   const dispatchAction = (a: TableStateAction) => {
     dispatchLocalAction(a);
