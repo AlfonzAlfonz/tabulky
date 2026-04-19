@@ -1,3 +1,4 @@
+import { FontCase } from "@gravity-ui/icons";
 import {
   ArrowUturnCcwLeft,
   ArrowUturnCwRight,
@@ -10,7 +11,8 @@ import {
   TextAlignRight,
   Underline,
 } from "@gravity-ui/icons";
-import { Button, ButtonGroup, Input } from "@heroui/react";
+import { BucketPaint } from "@gravity-ui/icons";
+import { Button, ButtonGroup, Input, Popover, Tooltip } from "@heroui/react";
 import { useApp } from "./AppContext";
 import { useEffect, useRef } from "react";
 
@@ -68,6 +70,16 @@ export const Editor = () => {
 
           <Button className="bg-white">
             <TextAlignJustify />
+          </Button>
+        </ButtonGroup>
+
+        <ButtonGroup variant="outline">
+          <Button className="bg-white">
+            <FontCase />
+          </Button>
+
+          <Button className="bg-white">
+            <BucketPaint />
           </Button>
         </ButtonGroup>
       </div>

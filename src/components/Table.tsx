@@ -5,6 +5,7 @@ import { Topbar } from "./Topbar";
 export const Table = () => {
   const {
     state: { table: state },
+    focused,
     setFocused,
   } = useApp();
 
@@ -17,7 +18,7 @@ export const Table = () => {
         width: `${gridTemplateColumns.reduce((acc, x) => acc + x, 0)}px`,
       }}
     >
-      <Topbar title="Test table" />
+      <Topbar title="Untitled table" />
       <div
         className="jed-table grid"
         style={{
@@ -35,7 +36,7 @@ export const Table = () => {
 
           return (
             <div
-              className="jed-cell"
+              className={`jed-cell ${focused?.offset === i ? "outline-2 outline-emerald-800" : ""}`}
               key={`${x};${y}`}
               style={{ gridColumnStart: x + 1, gridRowStart: y + 1 }}
               onClick={() => setFocused(i)}
