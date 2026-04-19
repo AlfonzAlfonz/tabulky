@@ -19,6 +19,8 @@ app.post("/api/create", (_, res) => {
   res.end(id);
 });
 
+app.get("/api", (_, res) => res.end("api"));
+
 const server = http.createServer(app);
 const io = new Server(server);
 

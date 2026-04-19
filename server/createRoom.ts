@@ -31,6 +31,7 @@ export const createRoom = (signal: AbortSignal, db: Db, id: string) => {
   };
 
   void (async () => {
+    // @ts-expect-error
     for await (const _ of pulse(10, "s", signal)) {
       await persist();
     }

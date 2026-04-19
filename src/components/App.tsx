@@ -5,6 +5,11 @@ import { clientTableStateReducer } from "../state/reducer";
 import { AppContext } from "./AppContext";
 import { Table } from "./Table";
 
+export const apiUrl = new URL(
+  import.meta.env.VITE_API_URL,
+  window.location.href,
+);
+
 interface Props {
   id: string;
 }
@@ -20,7 +25,7 @@ export const App = ({ id }: Props) => {
   const [focused, setFocused] = useState<{ offset: number; value: string }>();
 
   useEffect(() => {
-    const socket = io("http://localhost:4000", {
+    const socket = io(apiUrl.href, {
       query: { id },
     });
 

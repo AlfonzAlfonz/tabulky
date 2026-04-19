@@ -1,6 +1,7 @@
 import { Button, Card } from "@heroui/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { LayoutHeaderCells } from "@gravity-ui/icons";
+import { apiUrl } from "../components/App";
 
 export const Route = createFileRoute("/")({
   component: RouteComponent,
@@ -31,7 +32,7 @@ function RouteComponent() {
 }
 
 const createTable = async () => {
-  const res = await fetch("http://localhost:4000/api/create", {
+  const res = await fetch(`${apiUrl}api/create`, {
     method: "POST",
   });
   if (!res.ok) {

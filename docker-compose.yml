@@ -1,0 +1,31 @@
+services:
+  app:
+    build: .
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - VITE_API_URL=/
+    networks:
+      - app-network
+    volumes:
+      - sqlite_data:/app/data
+    restart: unless-stopped
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ./nginx/Dockerfile
+    ports:
+      - "8000:80"
+    depends_on:
+      - app
+    networks:
+      - app-network
+    restart: unless-stopped
+
+volumes:
+  sqlite_data:
+
+networks:
+  app-network:
+    driver: bridge

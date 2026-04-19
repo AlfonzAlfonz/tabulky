@@ -9,7 +9,7 @@ import {
 export type Db = ReturnType<typeof createDb>;
 
 export const createDb = (signal: AbortSignal) => {
-  const db = new DatabaseSync("./data.sqlite");
+  const db = new DatabaseSync("./data/data.sqlite");
 
   signal.addEventListener("abort", () => db.close());
 
